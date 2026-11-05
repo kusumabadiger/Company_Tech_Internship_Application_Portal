@@ -1,0 +1,6 @@
+{
+  "name": "Company Tech Internship Management System",
+  "description": "Automated internship application lifecycle, applicant tracking, and administration system for Company Tech.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

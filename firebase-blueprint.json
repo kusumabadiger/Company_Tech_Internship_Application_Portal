@@ -1,0 +1,219 @@
+{
+  "entities": {
+    "Application": {
+      "title": "Application",
+      "description": "Internship application submitted to Company Tech",
+      "type": "object",
+      "properties": {
+        "applicationId": {
+          "type": "string",
+          "description": "Unique application ID in format CT-APP-XXXXXX"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "Applicant full name",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "description": "Applicant contact email",
+          "format": "email"
+        },
+        "college": {
+          "type": "string",
+          "description": "College or institution name",
+          "maxLength": 150
+        },
+        "pursuingYear": {
+          "type": "string",
+          "description": "Current year of study",
+          "enum": ["1st Year", "2nd Year", "3rd Year", "4th Year", "Graduate / Postgraduate"]
+        },
+        "experienceLevel": {
+          "type": "string",
+          "description": "Applicant experience level",
+          "enum": ["Fresher", "Experienced"]
+        },
+        "internshipRole": {
+          "type": "string",
+          "description": "One of 12 Company Tech internship roles",
+          "enum": [
+            "Frontend Developer",
+            "Backend Developer",
+            "Full-Stack Developer",
+            "AI/ML Engineer",
+            "UI/UX Designer",
+            "Graphic Designer",
+            "Digital Marketing Intern",
+            "Social Media Manager",
+            "Content Writer",
+            "Business Development Intern",
+            "Community Manager",
+            "HR Intern"
+          ]
+        },
+        "resumePath": {
+          "type": "string",
+          "description": "Storage path or reference to uploaded resume"
+        },
+        "resumeName": {
+          "type": "string",
+          "description": "Original file name of the resume"
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "Server timestamp of submission"
+        },
+        "status": {
+          "type": "string",
+          "description": "Application status",
+          "enum": ["Pending", "Accepted", "Rejected"]
+        },
+        "decisionAt": {
+          "type": "string",
+          "description": "Server timestamp when decision was made"
+        },
+        "decisionBy": {
+          "type": "string",
+          "description": "Admin UID or identifier who made the decision"
+        },
+        "internshipDuration": {
+          "type": "string",
+          "description": "Internship duration if accepted",
+          "enum": ["1 month", "2 months", "3 months"]
+        },
+        "joiningDate": {
+          "type": "string",
+          "description": "Joining date if accepted"
+        },
+        "offerLetterPath": {
+          "type": "string",
+          "description": "Storage reference for the generated PDF offer letter"
+        },
+        "offerLetterGenerationStatus": {
+          "type": "string",
+          "description": "Offer letter generation state",
+          "enum": ["pending", "processing", "generated", "failed"]
+        },
+        "offerLetterGeneratedAt": {
+          "type": "string",
+          "description": "Timestamp when offer letter was generated"
+        },
+        "trackingTokenHash": {
+          "type": "string",
+          "description": "SHA-256 hash of secure tracking token"
+        },
+        "schemaVersion": {
+          "type": "number",
+          "description": "Schema version number"
+        }
+      },
+      "required": [
+        "applicationId",
+        "fullName",
+        "email",
+        "college",
+        "pursuingYear",
+        "experienceLevel",
+        "internshipRole",
+        "status",
+        "submittedAt"
+      ]
+    },
+    "EmailJob": {
+      "title": "EmailJob",
+      "description": "Transactional email log and delivery record",
+      "type": "object",
+      "properties": {
+        "jobId": {
+          "type": "string",
+          "description": "Unique email job ID"
+        },
+        "applicationId": {
+          "type": "string",
+          "description": "Associated application ID"
+        },
+        "emailType": {
+          "type": "string",
+          "description": "Type of email",
+          "enum": ["applicant_confirmation", "support_notification", "acceptance_offer", "rejection_notice"]
+        },
+        "recipient": {
+          "type": "string",
+          "description": "Recipient email address"
+        },
+        "status": {
+          "type": "string",
+          "description": "Delivery status",
+          "enum": ["pending", "processing", "sent", "delivered", "failed"]
+        },
+        "attemptCount": {
+          "type": "number",
+          "description": "Number of dispatch attempts"
+        },
+        "providerMessageId": {
+          "type": "string",
+          "description": "Transactional provider message identifier"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Job creation timestamp"
+        },
+        "lastAttemptAt": {
+          "type": "string",
+          "description": "Last delivery attempt timestamp"
+        },
+        "errorMessage": {
+          "type": "string",
+          "description": "Sanitized error information"
+        }
+      },
+      "required": ["jobId", "applicationId", "emailType", "recipient", "status", "createdAt"]
+    },
+    "AdminProfile": {
+      "title": "AdminProfile",
+      "description": "Authorized Administrator profile in Company Tech",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID"
+        },
+        "email": {
+          "type": "string",
+          "description": "Admin email address"
+        },
+        "role": {
+          "type": "string",
+          "description": "Administrative role",
+          "enum": ["admin", "superadmin"]
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["uid", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/applications/{applicationId}": {
+      "schema": {
+        "$ref": "Application"
+      },
+      "description": "Internship applications for Company Tech"
+    },
+    "/emailJobs/{jobId}": {
+      "schema": {
+        "$ref": "EmailJob"
+      },
+      "description": "Transactional email logs and queue records"
+    },
+    "/admins/{adminId}": {
+      "schema": {
+        "$ref": "AdminProfile"
+      },
+      "description": "Authorized administrator whitelist and roles"
+    }
+  }
+}

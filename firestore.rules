@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all unmatched paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_-]+$');
+    }
+
+    // Admin authorization check:
+    // Either email matches the designated administrator kusumabadiger10@gmail.com,
+    // or user is in the /admins/{uid} collection.
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email.lower() == 'kusumabadiger10@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidRole(role) {
+      return role in [
+        'Frontend Developer',
+        'Backend Developer',
+        'Full-Stack Developer',
+        'AI/ML Engineer',
+        'UI/UX Designer',
+        'Graphic Designer',
+        'Digital Marketing Intern',
+        'Social Media Manager',
+        'Content Writer',
+        'Business Development Intern',
+        'Community Manager',
+        'HR Intern'
+      ];
+    }
+
+    function isValidYear(year) {
+      return year in [
+        '1st Year',
+        '2nd Year',
+        '3rd Year',
+        '4th Year',
+        'Graduate / Postgraduate'
+      ];
+    }
+
+    function isValidApplication(data) {
+      return data.keys().hasAll([
+        'applicationId',
+        'fullName',
+        'email',
+        'college',
+        'pursuingYear',
+        'experienceLevel',
+        'internshipRole',
+        'status',
+        'submittedAt'
+      ]) &&
+      data.applicationId is string && data.applicationId.size() <= 64 &&
+      data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 100 &&
+      data.email is string && data.email.size() > 3 && data.email.size() <= 120 &&
+      data.college is string && data.college.size() > 0 && data.college.size() <= 150 &&
+      isValidYear(data.pursuingYear) &&
+      data.experienceLevel in ['Fresher', 'Experienced'] &&
+      isValidRole(data.internshipRole) &&
+      data.status in ['Pending', 'Accepted', 'Rejected'];
+    }
+
+    function isValidEmailJob(data, jobId) {
+      return data.keys().hasAll([
+        'jobId',
+        'applicationId',
+        'emailType',
+        'recipient',
+        'status',
+        'attemptCount',
+        'createdAt'
+      ]) &&
+      data.jobId == jobId &&
+      data.applicationId is string &&
+      data.emailType in ['applicant_confirmation', 'support_notification', 'acceptance_offer', 'rejection_notice'] &&
+      data.recipient is string &&
+      data.status in ['pending', 'processing', 'sent', 'delivered', 'failed'] &&
+      data.attemptCount is int &&
+      data.attemptCount >= 1;
+    }
+
+    // /applications collection
+    match /applications/{applicationId} {
+      // 1. Reading & Listing: Only the authorized administrator can view candidate records
+      allow get, list: if isAdmin();
+
+      // 2. Creation: Applicants can submit valid applications with initial 'Pending' status
+      allow create: if isValidId(applicationId) &&
+        isValidApplication(incoming()) &&
+        incoming().status == 'Pending' &&
+        incoming().applicationId == applicationId;
+
+      // 3. Updates: Only administrators can update; immutable ID must match, and status cannot be overridden once finalized
+      allow update: if isAdmin() &&
+        isValidId(applicationId) &&
+        isValidApplication(incoming()) &&
+        incoming().applicationId == existing().applicationId &&
+        (existing().status == 'Pending' || existing().status == incoming().status);
+
+      // 4. Deletions: Only administrators
+      allow delete: if isAdmin();
+    }
+
+    // /emailJobs collection
+    match /emailJobs/{jobId} {
+      allow read: if isAdmin();
+      // Allow creation of verified transactional email logs
+      allow create: if isValidId(jobId) && isValidEmailJob(incoming(), jobId);
+      allow update, delete: if isAdmin();
+    }
+
+    // /admins collection
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && isValidId(adminId);
+    }
+
+  }
+}
