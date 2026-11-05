@@ -249,4 +249,4 @@ git push -u origin main
 - **Default-Deny Firestore Rules:** Direct writes by unauthenticated clients are denied.
 - **Hashed Tracking Tokens:** Tracking uses SHA-256 token hashing; guessing an Application ID will not disclose candidate records.
 - **Zero Secrets in Client:** Email provider keys and admin secrets reside purely on the backend.
-- **No Invented Terms in Offer Letters:** Complies strictly with PRD Section 12.3: no invented salaries, stipends, or unauthorized contractual guarantees.
+- **No Invented Terms in Offer Letters: no invented salaries, stipends, or unauthorized contractual guarantees.
